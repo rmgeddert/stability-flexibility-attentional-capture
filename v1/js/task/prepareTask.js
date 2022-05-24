@@ -275,17 +275,34 @@ function getCategory(number, task){
   }
 }
 
-// ------------- Misc Functions ------------- //
-// Fisher-Yates shuffle
-function shuffle(array){
-  for(let j, x, i = array.length; i; j = Math.floor(Math.random() * i), x = array[--i], array[i] = array[j], array[j] = x);
-  return array;
-}
+function createAttentionalDistractors(trialsPerBlock){
+  let newDistractorArr = [], miniDistractorBlock;
+  let miniDistractorBlockLength = (trialsPerBlock - distractorsPerBlock)/distractorsPerBlock;
+  for (let i = 0; i < numBlocks; i++) {
+    // initial buffer
+    newDistractorArr = newDistractorArr.concat(new Array(distractorsPerBlock).fill("n"))
 
-// isEven Function for stimulus categorization
-function isEven(n) {return n % 2 == 0;}
-// let isEven = (n) => n % 2 == 0;
+    // each mini block gets a single distractor
+    for (let j = 0; j < distractorsPerBlock; j++) {
+      do {
+        // initialize mini block
+        miniDistractorBlock = []
 
-function getRandomInt(max){
-  return Math.floor(Math.random() * Math.floor(max));
+        preDistractorTrials = getRandomInt(miniDistractorBlockLength)
+
+        // add trials before distractor
+        miniDistractorBlock = miniDistractorBlock.concat(new Array(preDistractorTrials).fill("n"))
+
+        // add distractor
+        miniDistractorBlock.push("d")
+
+        // add trials after distractor
+        miniDistractorBlock = miniDistractorBlock.concat(new Array(miniDistractorBlockLength - 1 - preDistractorTrials).fill("n"))
+      } while (miniDistractorBlock[0] == "d" && newDistractorArr[newDistractorArr.length - 1] == "d");
+
+      // having checked is ok, add to the block
+      newDistractorArr = newDistractorArr.concat(miniDistractorBlock)
+    }
+  }
+  return newDistractorArr;
 }

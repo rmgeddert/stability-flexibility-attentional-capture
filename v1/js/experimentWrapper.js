@@ -3,7 +3,6 @@ function updateMainMenu(expStage){
   // display text based on experiment stage
   switch(expStage){
     case 1: //initial sound check
-      console.log("case 1");
       $("#table").hide();
       $("#demographicsForm").show();
       break;

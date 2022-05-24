@@ -1,4 +1,4 @@
-// see function navigateInstructionPath() in tasks.js for naviagtion code
+// see function navigateInstructionPath() in tasks.js for navigation code
 
 // global instruction iterator information. Change as needed
 let instructions = {
@@ -11,27 +11,27 @@ let instructions = {
     "prac1-1": 4, "prac1-2": 5, "prac2": 5, "prac3": 5, "main1": 4, "main2": 4
   },
   // what does instruction section end with?
-  // #nextSectionButton, #startExpButton, buttonPressNextSection, buttonPressStartTask
+  // #nextSectionButton, #startExpButton, keyPressNextSection, keyPressStartTask
   exitResponse: {
     "prac1-1": '#nextSectionButton',
-    "prac1-2": 'buttonPressStartTask',
-    "prac2": 'buttonPressStartTask',
-    "prac3": 'buttonPressStartTask',
+    "prac1-2": 'keyPressStartTask',
+    "prac2": 'keyPressStartTask',
+    "prac3": 'keyPressStartTask',
     "main1": '#nextSectionButton',
-    "main2": 'buttonPressStartTask'
+    "main2": 'keyPressStartTask'
   }
-};
+}
 let iterateAgain = false, task;
 
 function navigateInstructionPath(repeat = false){
   if (repeat == true) {
     // if multi stage instructions, ensures it goes back to first not second
-    switch (expStage){
-      case "prac1-1":
-      case "prac1-2":
-        expStage = "prac1-1";
-        break;
-    }
+    // switch (expStage){
+    //   case "prac1-1":
+    //   case "prac1-2":
+    //     expStage = "prac1-1";
+    //     break;
+    // }
     runInstructions();
   } else {
     switch (expStage){
@@ -76,96 +76,6 @@ function displayDefaults(stage){
   }
 }
 
-function runInstructions(){
-  // main instruction function (come here at start of instruction block)
-  sectionStart = new Date().getTime() - runStart;
-  sectionType = "instructions";
-
-  // hide/clear everything, just in case
-  hideInstructions();
-
-  // hide canvas if visible
-  canvas.style.display = "none";
-
-  // if need to repeat instructions (e.g., participant failed to meet accuracy requirement), then reshow all instructions
-  if (instructions["iterator"][expStage] >= instructions["max"][expStage]){
-
-    // loop through instructions and show
-    for (var i = 1; i <= instructions["max"][expStage]; i++) {
-      $('#instructions' + i).text( getNextInstructions( i, expStage ));
-    }
-
-    // reset iterateAgain incase looping turned it on by accident
-    iterateAgain = false;
-
-    // display instructions and prepare exit response mapping
-    $('.instructions').show();
-    exitResponse();
-
-  } else {
-
-    // remove any previous click listeners, if any
-    $(document).off("click","#nextInstrButton");
-    $(document).off("click","#startExpButton");
-    $(document).off("click","#nextSectionButton");
-
-    // clear all previous instructions, reset styles, and remove pictures
-    for (let i = 1; i <= 8; i++) {
-      $('#instructions' + i).text("");
-      resetDefaultStyles('#instructions' + i);
-      $('.insertedImage').remove();
-    }
-
-    // display proper instruction components, in case they are hidden
-    $('#instructionsDiv').show();
-    $('#nextInstrButton').show();
-    $('#nextSectionButton').hide();
-    $('#startExpButton').hide();
-    displayDefaults(expStage);
-  }
-
-  /* code for "Next" button click during instruction display
-        if running from Atom, need to use $(document).on, if through Duke Public Home Directory, either works.
-        https://stackoverflow.com/questions/19237235/jquery-button-click-event-not-firing
-  */
-  $(document).on("click", "#nextInstrButton", function(){
-  // $("#nextInstrButton").on('click', function(){
-    iterateInstruction();
-  });
-
-  // code for click startExperiment button
-  $(document).on('click', '#startExpButton', function(){
-    $('.instructions').hide();
-    $('#startExpButton').hide();
-    $('.insertedImage').remove();
-
-    console.log("button click");
-    // log data for time spent on this section
-    sectionEnd = new Date().getTime() - runStart;
-    data.push([expStage, sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-    console.log(data);
-
-    // clear all button press listeners
-    $(document).off("click","#nextInstrButton");
-    $(document).off("click","#startExpButton");
-    $(document).off("click","#nextSectionButton");
-    runTasks();
-  });
-
-  $(document).on('click', '#nextSectionButton', function(){
-    // log data for time spent on this section
-    sectionEnd = new Date().getTime() - runStart;
-    data.push([expStage, sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-    console.log(data);
-
-    // clear all button press listeners
-    $(document).off("click","#nextInstrButton");
-    $(document).off("click","#startExpButton");
-    $(document).off("click","#nextSectionButton");
-    navigateInstructionPath();
-  });
-};
-
 function getNextInstructions(slideNum, expStage){
 /* use the following options when modifying text appearance
     -  iterateAgain = true;
@@ -183,7 +93,7 @@ function getNextInstructions(slideNum, expStage){
           $( getImageText(instructionImages[2]) ).insertAfter( "#instructions" + slideNum);
           return "In this task, you will see a single number (1-9 excluding 5) appear in the middle of the screen.";
         case 2:
-          return "You will either need to identify the number as " + first_task() + " or identify the number as " + second_task() + ".";
+          return "You will either need to identify the number as " + first_task() + " or as " + second_task() + ".";
         case 3:
           return "On each trial, a colored rectangle surrounding the number will tell you how you should classify the number.";
         case 4:
@@ -271,6 +181,102 @@ function getNextInstructions(slideNum, expStage){
           return "Press any button to begin.";
     }
   }
+}
+
+function runInstructions(){
+  // show cursor
+  document.body.style.cursor = 'auto';
+
+  // main instruction function (come here at start of instruction block)
+  sectionStart = new Date().getTime() - runStart;
+  sectionType = "instructions";
+
+  // hide/clear everything, just in case
+  hideInstructions();
+
+  // hide canvas and other tasks if visible
+  $(".canvasas").hide();
+  $("#oddOneOutTaskDiv").hide();
+  $("#network-diagram").hide();
+  // if (showNavButtons) {
+  //   $("#navButtons").show();
+  // }
+
+  // if need to repeat instructions (e.g., participant failed to meet accuracy requirement), then reshow all instructions
+  if (instructions["iterator"][expStage] >= instructions["max"][expStage]){
+
+    // loop through instructions and show
+    for (var i = 1; i <= instructions["max"][expStage]; i++) {
+      $('#instructions' + i).text( getNextInstructions( i, expStage ));
+    }
+
+    // reset iterateAgain in case looping turned it on by accident
+    iterateAgain = false;
+
+    // display instructions and prepare exit response mapping
+    $('#instructionsDiv').show();
+    displayDefaults(expStage);
+    exitResponse();
+
+  } else {
+
+    // remove any previous click listeners, if any
+    $(document).off("click","#nextInstrButton");
+    $(document).off("click","#startExpButton");
+    $(document).off("click","#nextSectionButton");
+
+    // clear all previous instructions, reset styles, and remove pictures
+    for (let i = 1; i <= 8; i++) {
+      $('#instructions' + i).text("");
+      resetDefaultStyles('#instructions' + i);
+      clearInsertedContent();
+    }
+
+    // display proper instruction components, in case they are hidden
+    $('#instructionsDiv').show();
+    $('#nextInstrButton').show();
+    $('#nextSectionButton').hide();
+    $('#startExpButton').hide();
+    displayDefaults(expStage);
+  }
+
+  /* code for "Next" button click during instruction display
+        if running from Atom, need to use $(document).on, if through Duke Public Home Directory, either works.
+        https://stackoverflow.com/questions/19237235/jquery-button-click-event-not-firing
+  */
+  $(document).on("click", "#nextInstrButton", function(){
+  // $("#nextInstrButton").on('click', function(){
+    iterateInstruction();
+  });
+
+  // code for click startExperiment button
+  $(document).on('click', '#startExpButton', function(){
+    // update data logger on time spent in section
+    sectionEnd = new Date().getTime() - runStart;
+    logSectionData();
+
+    $('#instructionsDiv').hide();
+    $('#startExpButton').hide();
+    clearInsertedContent();
+
+    // clear all button press listeners
+    $(document).off("click","#nextInstrButton");
+    $(document).off("click","#startExpButton");
+    $(document).off("click","#nextSectionButton");
+    experimentFlow();
+  });
+
+  $(document).on('click', '#nextSectionButton', function(){
+    // update data logger on time spent in section
+    sectionEnd = new Date().getTime() - runStart;
+    logSectionData();
+
+    // clear all button press listeners
+    $(document).off("click","#nextInstrButton");
+    $(document).off("click","#startExpButton");
+    $(document).off("click","#nextSectionButton");
+    navigateInstructionPath();
+  });
 };
 
 function iterateInstruction(){
@@ -296,34 +302,15 @@ function exitResponse(){
     $('#startExpButton').show();
   } else if (instructions["exitResponse"][expStage] == "#nextSectionButton") {
     $('#nextSectionButton').show();
-  } else if (instructions["exitResponse"][expStage] == "buttonPressStartTask"){
+  } else if (instructions["exitResponse"][expStage] == "keyPressStartTask"){
     expType = 8;
-  } else if (instructions["exitResponse"][expStage] == "buttonPressNextSection"){
-    expType = 9;
-  }
-}
-
-function displayDefaults(stage){
-  // default values of instruction blocks. add any special cases
-  switch(stage){
-    // case "prac1-2":
-    // case "prac1-3":
-    //   showFirst();
-    default:
-      showFirst();
-      $('.instruction-header').show();
-      break;
-  }
+  } //else if (instructions["exitResponse"][expStage] == "buttonPressNextSection"){
+    //keyListener = 6;
+  //}
 }
 
 function getImageText(imageURL){
-  let fileName = getFileName(imageURL);
-  return "<img src='" + imageURL + "' class='insertedImage' id='"+ fileName +"'>";
-}
-
-function getFileName(path){
-  let n = path.lastIndexOf('/');
-  return path.substring(n + 1);
+  return "<img src='" + imageURL + "' class='insertedImage'>";
 }
 
 function showFirst() {
@@ -334,6 +321,11 @@ function changeTextFormat(elementName, property ,changeTo){
   $(elementName).css( property , changeTo );
 }
 
+function clearInsertedContent(){
+  $('.insertedImage').remove();
+  $('.insertedContent').remove();
+}
+
 function hideInstructions(){
   // remove any previous click listeners, if any
   $(document).off("click","#nextInstrButton");
@@ -341,7 +333,7 @@ function hideInstructions(){
   $(document).off("click","#nextSectionButton");
 
   // hide instruction DOMs
-  $('.instructions').hide();
+  $('#instructionsDiv').hide();
   $('#startExpButton').hide();
   $('#nextSectionButton').hide();
 
@@ -349,7 +341,7 @@ function hideInstructions(){
   for (let i = 1; i <= 8; i++) {
     $('#instructions' + i).text("");
     resetDefaultStyles('#instructions' + i);
-    $('.insertedImage').remove();
+    clearInsertedContent();
   }
 }
 

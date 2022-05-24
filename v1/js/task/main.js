@@ -1,23 +1,21 @@
-//https://javascript.info/strict-mode
-"use strict";
+"use strict"
 
 // for testing
-let testMode = false;
 let speed = "normal"; //fast, normal
-// speed = (testMode == true) ? "fast" : speed; //testMode defaults to "fast"
 let skipPractice = false; // turn practice blocks on or off
-let openerNeeded = false; //true
 
 // ----- Experiment Paramenters (CHANGE ME) ----- //
 let rectangleCue = true; // if true, colored rectangular cue signals task, else the numbers themselves are colored
 let stimInterval = (speed == "fast") ? 10 : 1500; //2000 stimulus interval
 let fixInterval = (speed == "fast") ? 10 : 500; //500 ms intertrial interval
 let earlyCueInterval = (rectangleCue != true) ? 0 : ((speed == "fast") ? 0 : 0); //100; early cue (relative to target presentation), 0 makes cue concurrant with target presentation. only valid with rectangle cue
-let numBlocks = 4, trialsPerBlock = 128; // (multiples of 16) (48 usually)
+let numBlocks = 4, trialsPerBlock = 128; // (multiples of 16)
 let numPracticeTrials = 8;
 let miniBlockLength = 0; //doesn't need to be multiple of 24. 0 to turn off
-let practiceAccCutoff = (testMode == true) ? 0 : 85; // 75 acc%
-let taskAccCutoff = (testMode == true) ? 0 : 85; // 75 acc%
+let practiceAccCutoff = 85; // 85 acc% = 7/8
+let taskAccCutoff = 85;
+let distractorsPerBlock = 8;
+let distractorInterval = 500;
 
 function ITIInterval(){
   let itiMin = (speed == "fast") ? 20 : 1200; //1200
@@ -28,10 +26,9 @@ function ITIInterval(){
 }
 
 //initialize global task variables
-let taskStimuliSet, cuedTaskSet, actionSet, switchRepeatList, relevancyArr; // global vars for task arrays
+let taskStimuliSet, cuedTaskSet, actionSet, switchRepeatList, relevancyArr, attentionalDistractors; // global vars for task arrays
 let canvas, ctx; // global canvas variable
 let expStage = (skipPractice == true) ? "main1" : "prac1-1";
-// vars for tasks (iterator, accuracy) and reaction times:
 let trialCount, blockTrialCount, acc, accCount, stimOnset, respOnset, respTime, block = 1, partResp, runStart, blockType = NaN;
 let stimTimeout, breakOn = false, repeatNecessary = false, data=[];
 let sectionStart, sectionEnd, sectionType, sectionTimer;
@@ -126,8 +123,7 @@ function startExperiment(){
 
       // 7: block feedback - press button to start next block
       sectionEnd = new Date().getTime() - runStart;
-      data.push(["feedback", sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-      console.log(data);
+      logSectionData();
       expType = 0;
 
       // increment block information before beginning next block
@@ -138,24 +134,21 @@ function startExperiment(){
     } else if (expType == 8) { // 8: "press button to start task"
       // log how much time was spent in this section
       sectionEnd = new Date().getTime() - runStart;
-      data.push([expStage, sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-      console.log(data);
+      logSectionData();
       // reset expStage and start task
       expType = 0;
       runTasks();
     } else if (expType == 9) { // 9: "press button to start next section"
       // log how much time was spent in this section
       sectionEnd = new Date().getTime() - runStart;
-      data.push([expStage, sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-      console.log(data);
+      logSectionData()
       // reset expStage and proceed to next section
       expType = 0;
       navigateInstructionPath(repeatNecessary);
     } else if (expType == 11) { // repeat instructions
       // log how much time was spent in this section
       sectionEnd = new Date().getTime() - runStart;
-      data.push([expStage, sectionType, block, blockType, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
-      console.log(data);
+      logSectionData()
       // iterate block and go back to instructions
       expType = 0;
       if (repeatNecessary) {
@@ -170,9 +163,4 @@ function startExperiment(){
   // start experiment
   runStart = new Date().getTime();
   runInstructions();
-}
-
-// ------- Misc Experiment Functions ------- //
-function randIntFromInterval(min, max) { // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min);
 }

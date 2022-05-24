@@ -6,12 +6,9 @@ let screenSizePromptCount = 0, numScreenSizeWarnings = 2;
 function runTasks(){
   //clear any instructions and show canvas
   hideInstructions();
-  canvas.style.display = "block";
-
-  // clear any instruction button press listeners
-  $(document).off("click","#nextInstrButton");
-  $(document).off("click","#startExpButton");
-  $(document).off("click","#nextSectionButton");
+  canvas.style.display = "inline-block";
+  $(".canvasas").show();
+  document.body.style.cursor = 'none';
 
   //reset accuracy and block trial count
   accCount = 0; blockTrialCount = 0;
@@ -22,7 +19,7 @@ function runTasks(){
     runPractice(numPracticeTrials, getFirstPracticeTask());
 
   // --- PRACTICE 2 --- //
-} else if (expStage.indexOf("prac2") != -1){
+  } else if (expStage.indexOf("prac2") != -1){
 
     runPractice(numPracticeTrials, getSecondPracticeTask());
 
@@ -68,6 +65,7 @@ function createPracticeTaskArrays(nTrials, task){
   cuedTaskSet = getTaskSet(taskStimuliPairs);
   switchRepeatList = getSwitchRepeatList(cuedTaskSet, nTrials);
   actionSet = createActionArray();
+  attentionalDistractors = new Array(nTrials).fill("n")
   // console.log("taskStimuliSet");
   // console.log(taskStimuliSet);
   // console.log("cuedTaskSet");
@@ -88,6 +86,7 @@ function createTaskArrays(trialsPerBlock){
   cuedTaskSet = getTaskSet(taskStimuliPairs);
   switchRepeatList = getSwitchRepeatList(cuedTaskSet);
   actionSet = createActionArray();
+  attentionalDistractors = createAttentionalDistractors(trialsPerBlock);
   // console.log("taskStimuliSet");
   // console.log(taskStimuliSet);
   // console.log("cuedTaskSet");
@@ -112,96 +111,63 @@ function countDown(seconds){
 }
 
 function runPracticeTrial(){
-  if (openerNeeded == false || opener != null) {
-    sectionType = "pracTask";
-    if (trialCount < taskStimuliSet.length){
-      if (expType == 3){ //check if key is being held down
-        expType = 4;
-        promptLetGo();
+  sectionType = "pracTask";
+  if (trialCount < taskStimuliSet.length){
+    if (expType == 3){ //check if key is being held down
+      expType = 4;
+      promptLetGo();
+    } else {
+      // check if screen size is big enough
+      if (screenSizeIsOk()){
+        // start next trial cycle
+        fixationScreen();
       } else {
-        // check if screen size is big enough
-        if (screenSizeIsOk()){
-          // start next trial cycle
-          fixationScreen();
-        } else {
-          promptScreenSize();
-        }
+        promptScreenSize();
       }
-    } else { //if practice block is over, go to feedback screen
-      practiceAccuracyFeedback( Math.round( accCount / (blockTrialCount) * 100 ) );
     }
-
-  } else {
-    // if menu is closed, hide other elements and show menu closed prompt
-    hideInstructions();
-    canvas.style.display = "none";
-    promptMenuClosed();
+  } else { //if practice block is over, go to feedback screen
+    practiceAccuracyFeedback( Math.round( accCount / (blockTrialCount) * 100 ) );
   }
 }
 
 function runTrial(){
-  // make sure opener (menu.html) is still open
-  if (openerNeeded == false || opener != null) {
-    sectionType = "mainTask";
-    if (trialCount < numBlocks * trialsPerBlock) { //if exp isn't over yet
+  sectionType = "mainTask";
+  if (trialCount < numBlocks * trialsPerBlock) { //if exp isn't over yet
 
-      if (trialCount % trialsPerBlock == 0 && !breakOn && trialCount != 0) {
-        //if arrived at big block break, update block information
-        breakOn = true;
-        bigBlockScreen();
+    if (trialCount % trialsPerBlock == 0 && !breakOn && trialCount != 0) {
+      //if arrived at big block break, update block information
+      breakOn = true;
+      bigBlockScreen();
 
-      } else if (trialCount % miniBlockLength == 0 && !breakOn && trialCount != 0) {
+    } else if (trialCount % miniBlockLength == 0 && !breakOn && trialCount != 0) {
 
-        //if arrived at miniblock break
-        breakOn = true; miniBlockScreen();
+      //if arrived at miniblock break
+      breakOn = true; miniBlockScreen();
+
+    } else {
+
+      if (expType == 3 || expType == 5){ //if key is being held down still
+        expType = 4;
+        promptLetGo();
 
       } else {
 
-        if (expType == 3 || expType == 5){ //if key is being held down still
-          expType = 4;
-          promptLetGo();
+        // check if screen size is big enough
+        if (screenSizeIsOk()){
+          // start next trial cycle
+          breakOn = false;
+          fixationScreen();
 
         } else {
 
-          // check if screen size is big enough
-          if (screenSizeIsOk()){
-            // start next trial cycle
-            breakOn = false;
-            fixationScreen();
+          promptScreenSize();
 
-          } else {
-
-            promptScreenSize();
-
-          }
         }
       }
-
-    } else {
-      endOfExperiment();
     }
 
   } else {
-    // if menu is closed, hide other elements and show menu closed prompt
-    hideInstructions();
-    canvas.style.display = "none";
-    promptMenuClosed();
-  }
-}
-
-function endOfExperiment(){
-  // end of experiment stuff
-  try {
-    // upload data to menu.html's DOM element
-    $("#RTs", opener.window.document).val(data.join(";"));
-
-    // call menu debriefing script
-    opener.updateMainMenu(2);
-
-    // close the experiment window
-    JavaScript:window.close();
-  } catch (e) {
-    alert("Data upload failed. Did you close the previous window?");
+    endOfExperiment();
   }
 }
 
@@ -214,11 +180,26 @@ function fixationScreen(){
   // display fixation
   ctx.fillText("+",canvas.width/2,canvas.height/2);
 
-  // determine which function is next
+  if (attentionalDistractors[trialCount] == "d") {
+    distractorScreen();
+  } else {
+    // determine which function is next
+    let nextScreenFunc = (earlyCueInterval > 0) ? earlyTaskCue : stimScreen;
+
+    // go to next after appropriate time
+    setTimeout(nextScreenFunc, fixInterval);
+  }
+}
+
+function distractorScreen(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "bold 120px Arial";
+  ctx.fillText("AHHHHH",canvas.width/2,canvas.height/2);
+
   let nextScreenFunc = (earlyCueInterval > 0) ? earlyTaskCue : stimScreen;
 
   // go to next after appropriate time
-  setTimeout(nextScreenFunc, fixInterval);
+  setTimeout(nextScreenFunc, distractorInterval);
 }
 
 function stimScreen(){
@@ -316,11 +297,11 @@ function itiScreen(){
   // log data
   data.push(["task", sectionType, block, blockType, trialCount + 1,
     blockTrialCount + 1, getAccuracy(acc), respTime, taskStimuliSet[trialCount],
-    getCongruency(taskStimuliSet[trialCount]), cuedTaskSet[trialCount], switchRepeatList[trialCount], partResp, stimOnset, respOnset, actionSet[trialCount][1], NaN, NaN, NaN]);
+    getCongruency(taskStimuliSet[trialCount]), cuedTaskSet[trialCount], switchRepeatList[trialCount], partResp, stimOnset, respOnset, actionSet[trialCount][1], attentionalDistractors[trialCount], NaN, NaN, NaN]);
   console.log(data);
 
   // prepare ITI canvas
-  ctx.fillStyle = accFeedbackColor();
+  ctx.fillStyle = "black"//accFeedbackColor();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // display response feedback (correct/incorrect/too slow)
@@ -450,81 +431,6 @@ function accFeedbackColor(){
     return "red";
   } else {
     return "black";
-  }
-}
-
-function getAccuracy(accValue){
-  //normalizes accuracy values into 0 or 1 (NaN becomes 0)
-  return accValue == 1 ? 1 : 0;
-}
-
-// --- misc functions for edge cases (pressing and not letting go, caps lock, screensize) ---
-function promptLetGo(){
-  //prepare canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "black";
-  ctx.font = "30px Arial";
-
-  // show warning
-  ctx.fillText("Please release key",canvas.width/2,canvas.height/2);
-  ctx.fillText("immediately after responding.",canvas.width/2,canvas.height/2 + 30);
-}
-
-function screenSizeIsOk(){
-  // attempts to check window width and height, using first base JS then jquery.
-  // if both fail, returns TRUE
-  let w, h, minWidth = 800, midHeight = 600;
-  try {
-    // base javascript
-    w = window.innerWidth;
-    h = window.innerHeight;
-    if (w == null | h == null) {throw "window.innerWidth/innerHeight failed.";}
-  } catch (err) {
-    try{
-      // jquery
-      w = $(window).width();
-      h = $(window).height();
-      if (w == null | h == null) {throw "$(window).width/height failed.";}
-    } catch (err2) {
-      // failure mode, returns true if both screen checks failed
-      return true;
-    }
-  }
-  // return dimension check if values are defined
-  return w >= minWidth && h >= midHeight;
-};
-
-function promptScreenSize(){
-  // set key press experiment type
-  expType = 10;
-
-  // prepare canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "black";
-  ctx.font = "25px Arial";
-
-  // allows up to two warnings before terminating experiment
-  if (screenSizePromptCount < numScreenSizeWarnings) {
-    screenSizePromptCount++;
-
-    // display screen size prompt
-    ctx.font = "25px Arial";
-    ctx.fillText("Your screen is not full screen or the",myCanvas.width/2,myCanvas.height/2);
-    ctx.fillText("screen size on your device is too small.",myCanvas.width/2,(myCanvas.height/2) + 40);
-    ctx.fillText("If this issue persists, you will need",myCanvas.width/2,(myCanvas.height/2)+160);
-    ctx.fillText("to restart the experiment and will ",myCanvas.width/2,(myCanvas.height/2)+200);
-    ctx.fillText("not be paid for your previous time.",myCanvas.width/2,(myCanvas.height/2)+240);
-    ctx.font = "bold 25px Arial";
-    ctx.fillText("Please correct this and press any button to continue.",myCanvas.width/2,(myCanvas.height/2)+100);
-
-  } else {
-
-    // display screen size prompt
-    ctx.fillText("Your screen is not full screen",myCanvas.width/2,myCanvas.height/2);
-    ctx.fillText("or the screen size on your device is too small.",myCanvas.width/2,(myCanvas.height/2)+50);
-    ctx.font = "bold 25px Arial";
-    ctx.fillText("Please refresh the page to restart the experiment.",myCanvas.width/2,(myCanvas.height/2)+100);
-
   }
 }
 
