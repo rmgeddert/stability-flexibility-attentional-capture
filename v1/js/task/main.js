@@ -87,9 +87,10 @@ let blockOrder = getBlockOrder(randIntFromInterval(1,4));
   // high 75% (H), low 25% (L), Flanker Inc (Fl), Task Switch (TS)
 
 // ------ EXPERIMENT STARTS HERE ------ //
-$(document).ready(function(){
+
+function startExperiment(){
   // prepare task canvas
-  canvas = document.getElementById('myCanvas');
+  canvas = document.getElementById('taskCanvas');
   ctx = canvas.getContext('2d');
   ctx.font = "bold 60px Arial";
   ctx.textBaseline= "middle";
@@ -166,21 +167,12 @@ $(document).ready(function(){
     }
   });
 
-  // see if menu.html is still open
-  if (openerNeeded == true && opener == null) {
-    promptMenuClosed();
-  } else {
-    // start experiment
-    runStart = new Date().getTime();
-    runInstructions();
-  }
-});
+  // start experiment
+  runStart = new Date().getTime();
+  runInstructions();
+}
 
 // ------- Misc Experiment Functions ------- //
 function randIntFromInterval(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-function promptMenuClosed(){
-  $('.MenuClosedPrompt').show();
 }

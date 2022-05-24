@@ -1,83 +1,35 @@
-// create global curStage variable
-let curStage = 0;
-
-// creates popup window
-function basicPopup(url) {
-  // opens popup with certain settings
-  popupWindow = window.open(url,'popUpWindow','height=' + screen.height + ',width=' + screen.width + ',left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no, menubar=no,location=no,directories=no,status=yes');
-}
-
-// this function allows Mturkers to get paid with their id
-function gup(name, tmpURL){
-  let regexS = "[\\?&]"+name+"=([^&#]*)";
-  let results = new RegExp(regexS).exec(tmpURL);
-  return (results == null) ? "" : results[1];
-}
-
-// // stop users from closing the menu.html window
-// window.onbeforeunload = function() {
-//     return 'You have unsaved changes!';
-// }
-
-// for testing, gets experiment set up immediately
-function startExperiment(){
-  prepareMenu();
-  updateMainMenu(1);
-}
-
 // function for navigating experiment stages
 function updateMainMenu(expStage){
-  // update global curstage variable
-  curStage = expStage;
-
   // display text based on experiment stage
   switch(expStage){
-    case 0: // demographics
-      $("#myButton").show();
-      $("#submit").hide();
-      $("#instruction").text("Click button to fill out demographic survey. PLEASE DO NOT CLOSE THIS SCREEN.");
-      $("#instruction").show();
+    case 1: //initial sound check
+      console.log("case 1");
+      $("#table").hide();
+      $("#demographicsForm").show();
       break;
-    case 1: //main task
-      $("#myButton").show();
-      $("#instruction").text("Click 'Continue' button to start the main task. PLEASE DO NOT CLOSE THIS SCREEN.");
-      $("#instruction").show();
+    case 2: //main task
+      $("#demographicsForm").hide();
+      $("#table").hide();
+      startExperiment();
       break;
-    case 2: //debriefing
-      // remove onbeforeunload listener
-      window.onbeforeunload = function (){}
-      $("#instruction").hide();
-      $("#myButton").hide();
-      $("#redo").hide();
+    case 3: //debriefing
       $("#mturk_form").show();
+      $("#demographicsForm").hide();
+      $("#table").show();
       break;
   }
 }
 
-// prevent duplicate workers from completing task
-let workerArr = [];
-
-// checks if workerID exists in workerid array
-function duplicateWorker(workedID){
-  workerId = gup('workerId', document.referrer);
-  return jQuery.inArray(workerId, workerArr)!=-1 && workerId != "";
-}
-
 $(document).ready(function(){
   // initial hide all DOM elements
+  $("#table").hide();
   $("#mturk_form").hide();
   $("#instructions").hide();
   $("#myButton").hide();
   $("#NoGo").hide();
 
   // gets MTurk Worker Information and assign to HTML elements
-  //window.location.href, document.referrer
-  // console.log(window.location.href);
   let mt = getAllUrlParams(window.location.href);
-  // console.log(mt);
-  // if(mt.hitid == ""){mt.hitid = "NA"}
-  // if(mt.workerid == ""){mt.workerid  = "NA"}
-  // if(mt.assid == ""){mt.assid = "NA"}
 
   document.getElementById('assignmentId').value = mt.assid;
   document.getElementById('hitId').value = mt.hitid;
@@ -87,53 +39,66 @@ $(document).ready(function(){
   console.log(document.getElementById('hitId').value);
   console.log(document.getElementById('workerId').value);
 
-  // console.log(window.location.href);
-  // console.log(gup('assignmentId', window.location.href));
-  // console.log(gup('hitId', window.location.href));
-  // console.log(gup('workerId', window.location.href));
-  // document.getElementById('assignmentId').value = gup('assignmentId', window.location.href);
-  // document.getElementById('hitId').value = gup('hitId', window.location.href);
-  // document.getElementById('workerId').value = gup('workerId', window.location.href);
-
   // check worker ID
-  if (document.getElementById("assignmentId").value == "" || document.getElementById("assignmentId").value == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+  if (document.getElementById("assignmentId").value == "" || document.getElementById("assignmentId").value == "ASSIGNMENT_ID_NOT_AVAILABLE" || document.getElementById("assignmentId").value == "assignment_id_not_available"){
 
     // display text for accepting HIT
-    $("#instruction").text("Please accept HIT first");
+    $("#table").show();
+    $("#instruction").text("Accept HIT first");
     $("#instruction").show();
-    $("#myButton").hide();
     $("#redo").hide();
 
   } else {
 
-    // prevents previous participants from participating again. See var workerArr above
-    if (duplicateWorker(workerId)) {
-
-  		$("#NoGo").html("You have performed our task before. Unfortunately, we are <br/> unable to allow duplicate entries. Please return this HIT. Thanks!")
-  		$("#NoGo").show();
-    } else {
-    	prepareMenu();
-    }
+    prepareMenu();
 
   }
-
 });
 
 function prepareMenu(){
   // update menu to first value
-  updateMainMenu(0);
+  updateMainMenu(1);
 
-  // create button press code for switching between sections
-  $("#myButton").click(function(){
-    switch(curStage){
-      case 0:
-        basicPopup("demographics.html");
-        break;
-      case 1:
-        basicPopup("main.html");
-        break;
+  $("#demographicSubmit").click(function(){
+    let anyBlank = false;
+    if (document.getElementById("gender").value == "Blank") {
+        document.getElementById("gender").style.borderColor = "red";
+        anyBlank = true;
+    }
+    if (document.getElementById("ethnicity").value == "Blank") {
+        document.getElementById("ethnicity").style.borderColor = "red";
+        anyBlank = true;
+    }
+    if (document.getElementById("race").value == "Blank") {
+        document.getElementById("race").style.borderColor = "red";
+        anyBlank = true;
+    }
+    if (!anyBlank) {
+      let demoData = [];
+      let e = document.getElementById("gender");
+      demoData.push(e.options[e.selectedIndex].value);
+      demoData.push(document.getElementById("age").value);
+      e = document.getElementById("ethnicity");
+      demoData.push(e.options[e.selectedIndex].value);
+      e = document.getElementById("race");
+      demoData.push(e.options[e.selectedIndex].value);
+      console.log(demoData);
+      $("#demographics").val(demoData.join(";"));
+      updateMainMenu(2);
     }
   });
+}
+
+function demoChange(event){
+  if (document.getElementById("gender").value != "Blank") {
+      document.getElementById("gender").style.borderColor = "black";
+  }
+  if (document.getElementById("ethnicity").value != "Blank") {
+      document.getElementById("ethnicity").style.borderColor = "black";
+  }
+  if (document.getElementById("race").value != "Blank") {
+      document.getElementById("race").style.borderColor = "black";
+  }
 }
 
 function getAllUrlParams(url) {

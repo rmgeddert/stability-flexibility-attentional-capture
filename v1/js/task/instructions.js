@@ -55,6 +55,27 @@ function navigateInstructionPath(repeat = false){
   }
 }
 
+function displayDefaults(stage){
+  // default values of instruction blocks. add any special cases
+  switch(stage){
+    case "final":
+      showFirst();
+      $('.instruction-header').hide();
+      break;
+    case "intro1":
+    case "main1":
+    case "main2":
+    case "main3":
+    case "main4":
+    case "main5":
+       // showFirst();
+    default:
+      showFirst();
+      $('.instruction-header').show();
+      break;
+  }
+}
+
 function runInstructions(){
   // main instruction function (come here at start of instruction block)
   sectionStart = new Date().getTime() - runStart;
@@ -96,7 +117,7 @@ function runInstructions(){
     }
 
     // display proper instruction components, in case they are hidden
-    $('.instructions').show();
+    $('#instructionsDiv').show();
     $('#nextInstrButton').show();
     $('#nextSectionButton').hide();
     $('#startExpButton').hide();
