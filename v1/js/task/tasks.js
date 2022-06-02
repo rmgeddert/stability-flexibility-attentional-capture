@@ -10,6 +10,9 @@ function runTasks(){
   $(".canvasas").show();
   document.body.style.cursor = 'none';
 
+  // change background color
+  window.document.body.style.backgroundColor = "lightgrey";
+
   //reset accuracy and block trial count
   accCount = 0; blockTrialCount = 0;
 
@@ -86,7 +89,7 @@ function createTaskArrays(trialsPerBlock){
   cuedTaskSet = getTaskSet(taskStimuliPairs);
   switchRepeatList = getSwitchRepeatList(cuedTaskSet);
   actionSet = createActionArray();
-  attentionalDistractors = createAttentionalDistractors(trialsPerBlock);
+  attentionalDistractors = createAttentionalDistractors();
   // console.log("taskStimuliSet");
   // console.log(taskStimuliSet);
   // console.log("cuedTaskSet");
@@ -100,7 +103,7 @@ function createTaskArrays(trialsPerBlock){
 function countDown(seconds){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "black";
-  ctx.font = "bold 60px Arial";
+  ctx.font = "bold 80px Arial";
   if (seconds > 0){
     ctx.fillText(seconds,canvas.width/2,canvas.height/2)
     setTimeout(function(){countDown(seconds - 1)},1000);
@@ -174,32 +177,50 @@ function runTrial(){
 function fixationScreen(){
   // prepare canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "bold 60px Arial";
+  ctx.font = "bold 85px Arial";
   ctx.fillStyle = "black";
 
   // display fixation
   ctx.fillText("+",canvas.width/2,canvas.height/2);
 
-  if (attentionalDistractors[trialCount] == "d") {
-    distractorScreen();
-  } else {
-    // determine which function is next
-    let nextScreenFunc = (earlyCueInterval > 0) ? earlyTaskCue : stimScreen;
-
-    // go to next after appropriate time
-    setTimeout(nextScreenFunc, fixInterval);
-  }
-}
-
-function distractorScreen(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = "bold 120px Arial";
-  ctx.fillText("AHHHHH",canvas.width/2,canvas.height/2);
-
+  // determine which function is next
   let nextScreenFunc = (earlyCueInterval > 0) ? earlyTaskCue : stimScreen;
 
   // go to next after appropriate time
-  setTimeout(nextScreenFunc, distractorInterval);
+  setTimeout(nextScreenFunc, fixInterval);
+}
+
+function drawDistractor(){
+  horz_offset = 200
+  vert_offset = 230
+  circle_rad = 70
+
+  let positions = {
+    "N": [canvas.width/2, canvas.height/2 - vert_offset, circle_rad],
+    "NE": [canvas.width/2 - horz_offset, canvas.height/2 - vert_offset/2, circle_rad],
+    "NW": [canvas.width/2 + horz_offset, canvas.height/2 - vert_offset/2, circle_rad],
+    "SE": [canvas.width/2 - horz_offset, canvas.height/2 + vert_offset/2, circle_rad],
+    "SW": [canvas.width/2 + horz_offset, canvas.height/2 + vert_offset/2, circle_rad],
+    "S": [canvas.width/2, canvas.height/2 + vert_offset, circle_rad]
+  }
+
+  // randomly choose distractor location
+  distLoc = _.sample(["N", "NE", "NW", "SE", "SW", "S"]);
+
+  // randomly choose distractor color
+  // "Dark Green", "DeepPink", "Orange", "Indigo"
+  distColor = _.sample(["#006400", "#FF1493", "#FFD700", "#4B0082"].filter(color => color != prevTrialDistColor));
+  prevTrialDistColor = distColor;
+
+  // draw circle distractor
+  drawCircle(...positions[distLoc], distColor)
+}
+
+function drawCircle(x, y, radius, color){
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.fill();
 }
 
 function stimScreen(){
@@ -225,10 +246,15 @@ function stimScreen(){
     }
 
     //reset all response variables and await response (expType = 1)
-    expType = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN;
+    expType = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN, distLoc  = NaN, distColor = NaN;
 
     // display stimulus
     drawStimulus();
+
+    //draw distractor as well
+    if (attentionalDistractors[trialCount] == "d") {
+      drawDistractor();
+    }
 
     // proceed to ITI screen after timeout
     stimTimeout = setTimeout(itiScreen,stimInterval);
@@ -245,7 +271,7 @@ function drawStimulus(){
     ctx.fillStyle = (cuedTaskSet[trialCount] == "m") ? magnitudeColor : parityColor;
   }
 
-  ctx.font = "bold 100px Arial";
+  ctx.font = "bold 120px Arial";
 
   // draw number on canvas
   ctx.fillText(number,canvas.width/2,canvas.height/2);
@@ -278,7 +304,7 @@ function drawRect(){
 
   // draw box
   ctx.beginPath();
-  ctx.lineWidth = "6";
+  ctx.lineWidth = "10";
   ctx.strokeStyle = (cuedTaskSet[trialCount] == "m") ? magnitudeColor : parityColor;
   ctx.rect((canvas.width/2) - (frameWidth/2), (canvas.height/2) - (frameHeight/2) - 5, frameWidth, frameHeight);
   ctx.stroke();
@@ -297,7 +323,7 @@ function itiScreen(){
   // log data
   data.push(["task", sectionType, block, blockType, trialCount + 1,
     blockTrialCount + 1, getAccuracy(acc), respTime, taskStimuliSet[trialCount],
-    getCongruency(taskStimuliSet[trialCount]), cuedTaskSet[trialCount], switchRepeatList[trialCount], partResp, stimOnset, respOnset, actionSet[trialCount][1], attentionalDistractors[trialCount], NaN, NaN, NaN]);
+    getCongruency(taskStimuliSet[trialCount]), cuedTaskSet[trialCount], switchRepeatList[trialCount], partResp, stimOnset, respOnset, actionSet[trialCount][1], attentionalDistractors[trialCount], distLoc, distColor, NaN, NaN, NaN]);
   console.log(data);
 
   // prepare ITI canvas
@@ -305,7 +331,7 @@ function itiScreen(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // display response feedback (correct/incorrect/too slow)
-  ctx.font = "bold 60px Arial";
+  ctx.font = "bold 80px Arial";
   ctx.fillText(accFeedback(),canvas.width/2,canvas.height/2);
 
   // trial finished. iterate trial counters

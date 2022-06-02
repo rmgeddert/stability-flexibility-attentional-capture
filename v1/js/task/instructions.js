@@ -4,11 +4,11 @@
 let instructions = {
   // contains the interator for each instruction block
   iterator: {
-    "prac1-1": 1, "prac1-2": 1, "prac2": 1, "prac3": 1, "main1": 1, "main2": 1
+    "prac1-1": 1, "prac1-2": 1, "prac2": 1, "prac3": 1, "main1": 1, "main1-2": 1
   },
   // contains the max value of each instruction iteration. iteration will STOP at max.
   max: {
-    "prac1-1": 4, "prac1-2": 5, "prac2": 5, "prac3": 5, "main1": 4, "main2": 4
+    "prac1-1": 4, "prac1-2": 5, "prac2": 5, "prac3": 5, "main1": 3, "main1-2": 5
   },
   // what does instruction section end with?
   // #nextSectionButton, #startExpButton, keyPressNextSection, keyPressStartTask
@@ -18,7 +18,7 @@ let instructions = {
     "prac2": 'keyPressStartTask',
     "prac3": 'keyPressStartTask',
     "main1": '#nextSectionButton',
-    "main2": 'keyPressStartTask'
+    "main1-2": 'keyPressStartTask'
   }
 }
 let iterateAgain = false, task;
@@ -48,7 +48,7 @@ function navigateInstructionPath(repeat = false){
         expStage = "main1";
         break;
       case "main1":
-        expStage = "main2";
+        expStage = "main1-2";
         break;
     }
     runInstructions();
@@ -157,26 +157,26 @@ function getNextInstructions(slideNum, expStage){
         case 1:
           return "Great job! You are now ready to begin the main experiment.";
         case 2:
-          return "Please try to maintain at least 75% accuracy throughout the task. We will let you know how you are doing at each break.";
+          return "This experiment consists of 4 sections, with each section lasting about 3 to 4 minutes. You will get short breaks in between each section.";
         case 3:
           changeTextFormat('#instructions' + slideNum,'font-weight','bold');
           return "Remember to respond as quickly and as accuractely as possible on each trial.";
-        case 4:
-          return "This experiment consists of 4 sections, with each section lasting about 3 to 4 minutes.";
       }
-    case "main2":
+    case "main1-2":
       switch (slideNum){
         case 1:
           $( getImageText(instructionImages[get_task_image(1)]) ).insertBefore( "#instructions" + slideNum);
-          return "Remember, if the rectangle is " + colorFirstTask() + ", indicate if the number is " + first_task() + " using the 'Z' and 'M' keys, respectively." ;
+          return "If the rectangle is " + colorFirstTask() + ", indicate if the number is " + first_task() + " using the 'Z' and 'M' keys, respectively." ;
         case 2:
           $( getImageText(instructionImages[get_task_image(2)]) ).insertBefore( "#instructions" + slideNum);
           return "If the rectangle is " + colorSecondTask() + ", indicate if the number is " + second_task() + " using the 'Z' and 'M' keys, respectively." ;
         case 3:
+          return "You may also occassionally see colored circles in addition to the colored rectangle. You do not need to respond to these circles or consider them in any way."
+        case 4:
           iterateAgain = true;
           $( getImageText(instructionImages[1])).insertAfter( "#instructions" + slideNum);
           return "Please place your hands on the 'Z' and 'M' keys as shown.";
-        case 4:
+        case 5:
           changeTextFormat('#instructions' + slideNum,'font-weight','bold');
           return "Press any button to begin.";
     }
@@ -186,6 +186,9 @@ function getNextInstructions(slideNum, expStage){
 function runInstructions(){
   // show cursor
   document.body.style.cursor = 'auto';
+
+  // set background color
+  window.document.body.style.backgroundColor = "white"
 
   // main instruction function (come here at start of instruction block)
   sectionStart = new Date().getTime() - runStart;

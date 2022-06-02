@@ -111,6 +111,6 @@ function endOfExperiment(){
 }
 
 function logSectionData(){
-  data.push([expStage, sectionType, block, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
+  data.push([expStage, sectionType, block, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, sectionStart, sectionEnd, sectionEnd - sectionStart]);
   console.log(data);
 }

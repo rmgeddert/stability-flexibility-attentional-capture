@@ -14,7 +14,7 @@ let numPracticeTrials = 8;
 let miniBlockLength = 0; //doesn't need to be multiple of 24. 0 to turn off
 let practiceAccCutoff = 85; // 85 acc% = 7/8
 let taskAccCutoff = 85;
-let distractorsPerBlock = 8;
+let distractorsProbability = 0.20;
 let distractorInterval = 500;
 
 function ITIInterval(){
@@ -26,7 +26,7 @@ function ITIInterval(){
 }
 
 //initialize global task variables
-let taskStimuliSet, cuedTaskSet, actionSet, switchRepeatList, relevancyArr, attentionalDistractors; // global vars for task arrays
+let taskStimuliSet, cuedTaskSet, actionSet, switchRepeatList, relevancyArr, attentionalDistractors, prevTrialDistColor, distLoc = NaN, distColor = NaN; // global vars for task arrays
 let canvas, ctx; // global canvas variable
 let expStage = (skipPractice == true) ? "main1" : "prac1-1";
 let trialCount, blockTrialCount, acc, accCount, stimOnset, respOnset, respTime, block = 1, partResp, runStart, blockType = NaN;

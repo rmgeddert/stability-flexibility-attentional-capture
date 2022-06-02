@@ -275,34 +275,37 @@ function getCategory(number, task){
   }
 }
 
-function createAttentionalDistractors(trialsPerBlock){
-  let newDistractorArr = [], miniDistractorBlock;
-  let miniDistractorBlockLength = (trialsPerBlock - distractorsPerBlock)/distractorsPerBlock;
-  for (let i = 0; i < numBlocks; i++) {
-    // initial buffer
-    newDistractorArr = newDistractorArr.concat(new Array(distractorsPerBlock).fill("n"))
+function createAttentionalDistractors(){
+  let newDistractorArr = [];
+  let miniBatchSize = 16;
+  let nMiniBatches = (numBlocks * trialsPerBlock) / miniBatchSize;
+  let nDistractors = Math.floor(distractorsProbability * miniBatchSize);
+  let nNoDistractor = miniBatchSize - nDistractors;
 
-    // each mini block gets a single distractor
-    for (let j = 0; j < distractorsPerBlock; j++) {
-      do {
-        // initialize mini block
-        miniDistractorBlock = []
+  // for each minibatch
+  for (let i = 0; i < nMiniBatches; i++) {
 
-        preDistractorTrials = getRandomInt(miniDistractorBlockLength)
+    // initialize minibatch
+    let miniDistractorBlock = new Array(nNoDistractor).fill("n").concat(new Array(nDistractors).fill("d"))
 
-        // add trials before distractor
-        miniDistractorBlock = miniDistractorBlock.concat(new Array(preDistractorTrials).fill("n"))
+    do {
+      miniDistractorBlock = shuffle(miniDistractorBlock)
+    } while (consecutiveDistractors(miniDistractorBlock));
 
-        // add distractor
-        miniDistractorBlock.push("d")
-
-        // add trials after distractor
-        miniDistractorBlock = miniDistractorBlock.concat(new Array(miniDistractorBlockLength - 1 - preDistractorTrials).fill("n"))
-      } while (miniDistractorBlock[0] == "d" && newDistractorArr[newDistractorArr.length - 1] == "d");
-
-      // having checked is ok, add to the block
-      newDistractorArr = newDistractorArr.concat(miniDistractorBlock)
-    }
+    // having checked is ok, add to the block
+    newDistractorArr = newDistractorArr.concat(miniDistractorBlock)
   }
+
   return newDistractorArr;
+
+  function consecutiveDistractors(arr){
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] == "d" && i != (arr.length - 1)) {
+        if (arr[i] == arr[i + 1]) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

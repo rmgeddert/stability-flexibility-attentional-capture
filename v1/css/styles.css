@@ -52,9 +52,9 @@ canvas {
 }
 
 .instruction-body {
-  font-size: 18px;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  font-size: 22px;
+  /* margin-top: 5px;
+  margin-bottom: 5px; */
 }
 
 .instruction-header p {
@@ -69,19 +69,21 @@ canvas {
 /* buttons  */
 #nextInstrButton{
   font-size: 22px;
+  background-color: lightgrey;
 }
 
 #nextSectionButton{
   color: blue;
-  font-size: 22px;
+  font-size: 25px;
   font-weight: bold;
+  background-color: lightgrey;
 }
 
 #startExpButton {
   display:none;
   color: black;
   border: 3px outset grey;
-  background-color: #CCCCCC;
+  background-color: lightgrey;
   padding: 8px;
   text-decoration: none;
   font-family: Arial, Helvetica;

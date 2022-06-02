@@ -1,3 +1,5 @@
+let initForm = 2;
+
 // function for navigating experiment stages
 function updateMainMenu(expStage){
   // display text based on experiment stage
@@ -56,7 +58,7 @@ $(document).ready(function(){
 
 function prepareMenu(){
   // update menu to first value
-  updateMainMenu(1);
+  updateMainMenu(initForm);
 
   $("#demographicSubmit").click(function(){
     let anyBlank = false;
