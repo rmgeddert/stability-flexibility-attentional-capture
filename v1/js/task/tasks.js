@@ -1,6 +1,6 @@
 // some tasks.js specific variables
 let trialFunc;
-let screenSizePromptCount = 0, numScreenSizeWarnings = 2;
+let screenSizePromptCount = 0, numScreenSizeWarnings = 3;
 
 // main task function
 function runTasks(){
