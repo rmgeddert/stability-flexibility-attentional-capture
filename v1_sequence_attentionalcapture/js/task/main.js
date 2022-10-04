@@ -1,11 +1,11 @@
 "use strict"
 
 // QOL parameters
-let expStage = "main1"; //first expStage, see instructions.js
+let expStage = "prac1"; //first expStage, see instructions.js
 let speed = "normal"; //speed of experiment: fast or normal
 
 // ----- Global Variables  ----- //
-let stimInterval = (speed == "fast") ? 10 : 1500;
+let stimInterval = (speed == "fast") ? 10 : 2000;
 let fixInterval = (speed == "fast") ? 10 : 500;
 let nBlocks = 4;
 let trialsPerBlock = 160; // (multiples of 16)
@@ -20,7 +20,7 @@ let nFillers = trialsPerBlock - nSequenceTrials - nSequenceFlips - nSequenceNotF
 let minFillerLength = 3;
 let maxFillerLength = 5;
 // shapes ([C]ircle, [S]quare, [D]iamond, [H]exagon)
-let shape1 = "c"
+let shape1 = "s"
 let shape2 = "h"
 // dict to switch shapes, useful to have
 let shapeSwitcher = {}
@@ -48,20 +48,20 @@ let flipBlockType = {
   'D': 'A'
 }
 
-let numPracticeTrials = 8;
-let miniBlockLength = 0; //doesn't need to be multiple of 24. 0 to turn off
+// for practice task
+let nPracticeTrials = 16;
 let practiceAccCutoff = 80; // 85 acc% = 7/8
-let taskAccCutoff = 85;
 
-let trialCount, blockTrialCount, block, accCount = 0;
+// trial level information (default to lowest value)
+let trialCount = 1, blockTrialCount = 1, block = 1, accCount = 0;
 
 //global task arrays
-let targetShapeArr = [], distractionArr = [], taskSequenceArr = [], targetLocationArr = [], distractorLocationArr = [], arrowDirectionArr = [];
+let targetShapeArr = [], distractionArr = [], taskSequenceArr = [], targetLocationArr = [], distractorLocationArr = [], lineDirectionArr = [];
 let sequenceTypeArr, sequenceKindArr, sequencePositionArr;
 
 //other global vars
 let canvas, ctx; // global canvas variable
-let taskObject, taskFunc, transitionFunc, taskName;
+let taskFunc, transitionFunc, stimFunc, taskName;
 let acc, stimOnset, respOnset, respTime, partResp, runStart;
 let stimTimeout, breakOn = false, repeatNecessary = false, data=[];
 let sectionStart, sectionEnd, sectionType, sectionTimer;
@@ -81,7 +81,9 @@ function experimentFlow(){
   block = 1;
 
   if (expStage.indexOf("prac1") != -1){
-    // practice task
+    lineDirectionPracticeTask();
+  } else if (expStage.indexOf("prac2") != -1){
+    attentionalSingletonPracticeTask();
   } else if (expStage.indexOf("main1") != -1){
     attentionalSingletonTask();
   } else if (expStage.indexOf("final") != -1) {

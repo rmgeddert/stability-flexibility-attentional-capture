@@ -1,29 +1,34 @@
 function attentionalSingletonTask(){
-  console.log("attentionalSingletonTask");
+
+  // set taskName for data logging
+  taskName = "additionalSingletonTask";
+
   // prepare for task
   hideInstructions();
   showCanvas();
   hideCursor();
   changeScreenBackgroundTo("lightgrey");
 
+  // global variables for functions
   taskFunc = attentionalSingletonTrial;
   transitionFunc = itiScreen;
+  stimFunc = drawStimGrid;
 
   //create task arrays
   buildTaskArray();
 
-  // start task after countdown
+  // start task after countdown (calls taskFunc)
   countDown(3);
 }
 
 function attentionalSingletonTrial(){
-    // change global variables
-    sectionType = "mainTask";
-    taskName = "additionalSingletonTask";
 
-    // if experiment is over, go to end of experiment
+    // (re)set sectionType (might have been changed to block break)
+    sectionType = "mainTask";
+
+    // if task is over, proceed back to next instruction (or end of experiment)
     if (trialCount >= nBlocks * trialsPerBlock) {
-      experimentFlow();
+      navigateInstructionPath();
       return;
     }
 
@@ -51,27 +56,11 @@ function attentionalSingletonTrial(){
     fixationScreen();
 }
 
-function fixationScreen(){
-  prepareCanvas("85px Arial", "black", true);
-  ctx.fillText("+",canvas.width/2,canvas.height/2);
-  setTimeout(stimScreen, fixInterval);
-}
-
-function stimScreen(){
-  stimOnset = new Date().getTime() - runStart;
-  prepareCanvas("45px Arial", "black", true)
-
-  //start drawing here
-  drawStimGrid()
-
-  keyListener = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN;
-  stimTimeout = setTimeout(itiScreen,stimInterval);
-}
-
 function drawStimGrid(){
   let horz_offset = 180
   let vert_offset = 210
-  let circle_rad = 50
+  let circle_rad = 70
+  let line_proportion = 0.6
 
   let positions = {
     1: [canvas.width/2, canvas.height/2 - vert_offset, circle_rad],
@@ -85,101 +74,33 @@ function drawStimGrid(){
   let targetShape = targetShapeArr[trialCount - 1];
   let nonTargetShape = shapeSwitcher[targetShape];
 
-  for (let [key, coords] of Object.entries(positions)) {
+  for (let [loc, coords] of Object.entries(positions)) {
 
     // if target, draw target and continue
-    if (key == targetLocationArr[trialCount - 1]) {
-      // console.log("Drawing as target, key: " + key);
-      // console.log(coords);
+    if (loc == targetLocationArr[trialCount - 1]) {
       defaultStyle();
       drawShape(targetShape, coords);
-      drawStim(...coords, "/")
+      drawLine(...coords, line_proportion, lineDirectionArr[trialCount - 1])
       continue;
     }
 
     // if distractor, draw but red
     if (distractionArr[trialCount - 1] == "d") {
-      if (key == distractorLocationArr[trialCount - 1]) {
+      if (loc == distractorLocationArr[trialCount - 1]) {
         ctx.strokeStyle = 'red'
         ctx.lineWidth = 4
         drawShape(nonTargetShape, coords);
-        drawStim(...coords, "/")
+        defaultStyle();
+        drawLine(...coords, line_proportion, Math.random() > 0.5 ? "l" : "r")
         continue;
       }
     }
 
-    // if neither (or no distractor), draw non target shape
+    // if neither (or no distractor trial), draw non target shape
     defaultStyle()
     drawShape(nonTargetShape, coords);
-    drawStim(...coords, "\\")
+    drawLine(...coords, line_proportion, Math.random() > 0.5 ? "l" : "r")
   }
-}
-
-function drawShape(shape, coords){
-  if (shape == 'c'){
-    drawCircle(...coords);
-  } else if (shape == 's'){
-    drawSquare(...coords);
-  } else if (shape == 'h') {
-    drawHexagon(...coords);
-  }
-}
-
-function drawSquare(x, y, radius){
-  // width = average width of circumsribed circle/square and vice versa
-  let width = ((2 * radius / Math.sqrt(2)) + radius * 2) / 2
-  ctx.beginPath();
-  ctx.rect(x - width/2, y - width/2, width,  width)
-  ctx.closePath();
-  ctx.stroke();
-}
-
-function drawHexagon(x, y, radius){
-  // includes +10%radius adjustment
-  let a = 2 * Math.PI / 6;
-  ctx.beginPath();
-  for (var i = 0; i < 6; i++) {
-    ctx.lineTo(x + (radius * 1.1) * Math.cos(a * i), y + (radius * 1.1) * Math.sin(a * i));
-  }
-  ctx.closePath();
-  ctx.stroke();
-}
-
-function drawCircle(x, y, radius){
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, 2 * Math.PI);
-  ctx.stroke();
-}
-
-function defaultStyle(){
-  prepareCanvas("45px Arial", "black", false)
-  ctx.strokeStyle = 'black'
-  ctx.lineWidth = 1
-}
-
-function drawStim(x, y, radius, target){
-  ctx.font = '45px Arial'
-  ctx.fillStyle = 'black'
-  ctx.fillText(target, x, y + 5)
-}
-
-function itiScreen(){
-  if (keyListener == 1) { // participant didn't respond
-    keyListener = 0;
-  } else if (keyListener == 2) { //participant still holding down response key
-    keyListener = 3;
-  }
-
-  // log data
-  logAdditionalSingletonTask();
-
-  // display feedback
-  prepareCanvas("80px Arial", "black", true);
-  ctx.fillText(accFeedback(),canvas.width/2,canvas.height/2);
-
-  // trial finished. iterate and proceed to next
-  trialCount++; blockTrialCount++;
-  setTimeout(taskFunc, itiInterval(1200, 1400, 50));
 }
 
 function buildTaskArray(){
@@ -210,14 +131,14 @@ function buildTaskArray(){
 
   // figure out at which of 6 locations the target will appear on each trial, do it in block batches so each block is closer to perfectly 50/50. Also figure out distractor in same step
   for (let i = 0; i < nBlocks; i++) {
-    let locArr = buildTargetLocationArr();
+    let locArr = buildTargetLocationArr(trialsPerBlock);
     targetLocationArr = targetLocationArr.concat(locArr);
     distractorLocationArr = distractorLocationArr.concat(buildDistractorLocationArr(locArr));
   }
 
-  // figure out which arrow will appear for the target on each trial, do it in block batches so each block is closer to perfectly 50/50
+  // figure out which line will appear for the target on each trial, do it in block batches so each block is closer to perfectly 50/50
   for (let i = 0; i < nBlocks; i++) {
-    arrowDirectionArr = arrowDirectionArr.concat(buildArrowDirectionArray());
+    lineDirectionArr = lineDirectionArr.concat(buildLineDirectionArray(trialsPerBlock));
   }
 }
 
@@ -225,16 +146,16 @@ function buildDistractorLocationArr(targetArr){
   return targetArr.map(n => _.sample(_.range(1,nLocations + 1).filter(m => m != n)));
 }
 
-function buildTargetLocationArr(){
-  let locationArr = new Array(Math.floor(trialsPerBlock/nLocations)).fill(_.range(1,nLocations + 1)).flat();
-  locationArr = locationArr.concat(_.range(1, (trialsPerBlock % nLocations)+1));
+function buildTargetLocationArr(nTrials){
+  let locationArr = new Array(Math.floor(nTrials/nLocations)).fill(_.range(1,nLocations + 1)).flat();
+  locationArr = locationArr.concat(_.range(1, (nTrials % nLocations)+1));
   return shuffle(locationArr);
 }
 
-function buildArrowDirectionArray(){
-  let arrowArr = new Array(Math.floor(trialsPerBlock/2)).fill("l");
-  arrowArr = arrowArr.concat(new Array(trialsPerBlock - arrowArr.length).fill("r"));
-  return shuffle(arrowArr);
+function buildLineDirectionArray(nTrials){
+  let lineArr = new Array(Math.floor(nTrials/2)).fill("l");
+  lineArr = lineArr.concat(new Array(nTrials - lineArr.length).fill("r"));
+  return shuffle(lineArr);
 }
 
 function buildBlockArr(seqOrder, blockType){

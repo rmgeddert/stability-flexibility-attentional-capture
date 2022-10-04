@@ -1,3 +1,104 @@
+function fixationScreen(){
+  prepareCanvas("85px Arial", "black", true);
+  ctx.fillText("+",canvas.width/2,canvas.height/2);
+  setTimeout(stimScreen, fixInterval);
+}
+
+function stimScreen(){
+  stimOnset = new Date().getTime() - runStart;
+  prepareCanvas("45px Arial", "black", true)
+
+  // draw stimuli for this trial
+  stimFunc()
+
+  // prepare for response and proceed to iti after delay
+  keyListener = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN;
+  stimTimeout = setTimeout(itiScreen, stimInterval);
+}
+
+function itiScreen(){
+  if (keyListener == 1) { // participant didn't respond
+    keyListener = 0;
+  } else if (keyListener == 2) { //participant still holding down response key
+    keyListener = 3;
+  }
+
+  // log data
+  logAdditionalSingletonTask();
+
+  // display feedback
+  prepareCanvas("60px Arial", "black", true);
+  ctx.fillText(accFeedback(),canvas.width/2,canvas.height/2);
+
+  // trial finished. iterate and proceed to next
+  trialCount++; blockTrialCount++;
+  setTimeout(taskFunc, itiInterval(1200, 1400, 50));
+}
+
+function drawShape(shape, coords){
+  if (shape == 'c'){
+    drawCircle(...coords);
+  } else if (shape == 's'){
+    drawSquare(...coords);
+  } else if (shape == 'h') {
+    drawHexagon(...coords);
+  }
+}
+
+function drawSquare(x, y, radius){
+  // width = average width of circumscribed circle/square and vice versa
+  let width = ((2 * radius / Math.sqrt(2)) + radius * 2) / 2
+  ctx.beginPath();
+  ctx.rect(x - width/2, y - width/2, width,  width)
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawHexagon(x, y, radius){
+  // includes +10%radius adjustment
+  let a = 2 * Math.PI / 6;
+  ctx.beginPath();
+  for (var i = 0; i < 6; i++) {
+    ctx.lineTo(x + (radius * 1.1) * Math.cos(a * i), y + (radius * 1.1) * Math.sin(a * i));
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawCircle(x, y, radius){
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+}
+
+function defaultStyle(){
+  prepareCanvas("45px Arial", "black", false)
+  ctx.strokeStyle = 'black'
+  ctx.lineWidth = 1
+}
+
+function drawLine(x, y, radius, line_proportion, line_direction){
+  // how much to adjust x1, y1 and x2, y2
+  let x1_adj, y1_adj, x2_adj, y2_adj;
+  if (line_direction == "r") { //right facing line
+    x1_adj = -(line_proportion / Math.sqrt(2)) * radius
+    y1_adj = (line_proportion / Math.sqrt(2)) * radius
+    x2_adj = (line_proportion / Math.sqrt(2)) * radius
+    y2_adj = -(line_proportion / Math.sqrt(2)) * radius
+  } else { // left facing line
+    x1_adj = -(line_proportion / Math.sqrt(2)) * radius
+    y1_adj = -(line_proportion / Math.sqrt(2)) * radius
+    x2_adj = (line_proportion / Math.sqrt(2)) * radius
+    y2_adj = (line_proportion / Math.sqrt(2)) * radius
+  }
+
+  // draw the line
+  ctx.beginPath()
+  ctx.moveTo(x + x1_adj, y + y1_adj)
+  ctx.lineTo(x + x2_adj, y + y2_adj)
+  ctx.stroke()
+}
+
 function accFeedback(){
   if (acc == 1){
     return "Correct";

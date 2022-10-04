@@ -3,16 +3,17 @@
 let instructions = {
   // contains the interator for each instruction block, default 1
   iterator: {
-    "prac1": 1, "main1": 1
+    "prac1": 1, "prac2": 1, "main1": 1
   },
   // contains the max value of each instruction iteration. iteration will STOP at max and display exit response
   max: {
-    "prac1": 2, "main1": 2
+    "prac1": 2, "prac2": 2, "main1": 2
   },
   // what does instruction section end with?
   // #nextSectionButton, #startExpButton, keyPressNextSection, keyPressStartTask
   exitResponse: {
     "prac1": 'keyPressStartTask',
+    "prac2": 'keyPressStartTask',
     "main1": 'keyPressStartTask'
   }
 }
@@ -31,21 +32,16 @@ function navigateInstructionPath(repeat = false){
     runInstructions();
   } else {
     switch (expStage){
-      case "prac1-1":
-        expStage = "prac1-2";
-        break;
-      case "prac1-2":
+      case "prac1":
         expStage = "prac2";
         break;
       case "prac2":
-        expStage = "prac3";
-        break;
-      case "prac3":
         expStage = "main1";
         break;
       case "main1":
-        expStage = "main1-2";
-        break;
+        expStage = "final";
+        experimentFlow();
+        return;
     }
     runInstructions();
   }
@@ -86,6 +82,13 @@ function getInstructionText(slideNum, expStage){
       switch (slideNum){
         case 1:
           return "Welcome to the experiment!";
+        case 2:
+          return "Press any button to start the task.";
+      }
+    case "prac1":
+      switch (slideNum){
+        case 1:
+          return "These are the instructions for the second practice task";
         case 2:
           return "Press any button to start the task.";
       }
