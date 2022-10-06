@@ -11,7 +11,7 @@ function lineDirectionPracticeTask(){
   changeScreenBackgroundTo("lightgrey");
 
   // global variables for functions
-  taskFunc = lineDirectionPracticeTrial;
+  taskFunc = practiceTrialFunc;
   transitionFunc = itiScreen;
   stimFunc = drawShapeAndLine;
 
@@ -22,39 +22,9 @@ function lineDirectionPracticeTask(){
   countDown(3);
 }
 
-function lineDirectionPracticeTrial(){
-
-    // (re)set sectionType (might have been changed to block break)
-    sectionType = "practiceTask";
-
-    // if task is over, proceed back to next instruction
-    if (trialCount >= nPracticeTrials) {
-      navigateInstructionPath();
-      return;
-    }
-
-    // person is still holding down key from previous trial, tell them to let go
-    if (keyListener == 3){
-      promptLetGo();
-      return;
-    }
-
-    // if they minimized the screen, tell them its too small.
-    if (!screenSizeIsOk()){
-      promptScreenSize();
-      return;
-    }
-
-    // none of the above happened, proceed to trial
-    breakOn = false;
-    fixationScreen();
-}
-
 function drawShapeAndLine(){
   let horz_offset = 180
   let vert_offset = 210
-  let circle_rad = 70
-  let line_proportion = 0.6
 
   let positions = {
     1: [canvas.width/2, canvas.height/2 - vert_offset, circle_rad],
@@ -65,7 +35,9 @@ function drawShapeAndLine(){
     6: [canvas.width/2, canvas.height/2 + vert_offset, circle_rad]
   }
 
-  let targetShape = targetShapeArr[trialCount - 1];
+  targetShape = targetShapeArr[trialCount - 1];
+  nonTargetShape = NaN;
+  distractorLineDirection = NaN;
   let coords = positions[targetLocationArr[trialCount - 1]];
 
   // draw the shape and arrow
@@ -102,4 +74,7 @@ function buildLineDirectionPracticeTaskArray(){
 
   // get arrow direction at that location
   lineDirectionArr = buildLineDirectionArray(nPracticeTrials);
+
+  // get distraction array (no distractions)
+  distractionArr = new Array(nPracticeTrials).fill("n");
 }

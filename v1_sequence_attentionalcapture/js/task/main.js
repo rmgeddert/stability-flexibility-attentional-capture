@@ -1,12 +1,15 @@
 "use strict"
 
 // QOL parameters
-let expStage = "prac1"; //first expStage, see instructions.js
-let speed = "normal"; //speed of experiment: fast or normal
+let expStage = "prac1-1"; //first expStage, see instructions.js
+let speed = "fast"; //speed of experiment: fast or normal
 
 // ----- Global Variables  ----- //
-let stimInterval = (speed == "fast") ? 10 : 2000;
+let stimInterval = (speed == "fast") ? 10 : 3000;
 let fixInterval = (speed == "fast") ? 10 : 500;
+let itiMin = (speed == "fast") ? 10 : 1200;
+let itiMax = (speed == "fast") ? 10 : 1400;
+let itiStep = 50;
 let nBlocks = 4;
 let trialsPerBlock = 160; // (multiples of 16)
 let nLocations = 6; //number of locations in distractor circle
@@ -20,12 +23,16 @@ let nFillers = trialsPerBlock - nSequenceTrials - nSequenceFlips - nSequenceNotF
 let minFillerLength = 3;
 let maxFillerLength = 5;
 // shapes ([C]ircle, [S]quare, [D]iamond, [H]exagon)
-let shape1 = "s"
-let shape2 = "h"
+let shape1 = "h"
+let shape2 = "s"
+let circle_rad = 75
+let line_proportion = 0.8
 // dict to switch shapes, useful to have
 let shapeSwitcher = {}
 shapeSwitcher[shape1] = shape2;
 shapeSwitcher[shape2] = shape1;
+// global variables for data logging for attentional singleton task
+let distractorLineDirection, targetShape, nonTargetShape;
 
 let taskSequences = {
   1: [['s', 'd', 's', 1, 1], ['r', 'n', 's', 1, 2], ['s', 'd', 's', 1, 3], ['r', 'n', 's', 1, 4]],
@@ -78,11 +85,19 @@ let taskMapping = randIntFromInterval(1,2);
 function experimentFlow(){
   trialCount = 1;
   blockTrialCount = 1;
-  block = 1;
+  if (!repeatNecessary) {
+    block = 1;
+  } else {
+    block++;
+  }
+  accCount = 0;
+  repeatNecessary = false;
 
   if (expStage.indexOf("prac1") != -1){
     lineDirectionPracticeTask();
   } else if (expStage.indexOf("prac2") != -1){
+    fullGridPracticeTask();
+  } else if (expStage.indexOf("prac3") != -1){
     attentionalSingletonPracticeTask();
   } else if (expStage.indexOf("main1") != -1){
     attentionalSingletonTask();
@@ -133,17 +148,23 @@ function keyPressListener(event){
   if (keyListener == 1) {
     keyListener = 2;
     partResp = event.which;
-    // getAccuracyAndRT(partResp);
+    respOnset = new Date().getTime() - runStart;
+    getAccuracyAndRT(partResp);
   }
 }
 
 function getAccuracyAndRT(partResp){
   // determine reaction time
-  respOnset = new Date().getTime() - runStart;
   respTime = respOnset - stimOnset;
 
   // determine accuracy
-  acc = 1 // <- add code here
+  if (lineDirectionArr[trialCount - 1] == "l") {
+    acc = ([90, 122].indexOf(event.which) != -1) ? 1 : 0;
+  } else {
+    acc = ([77, 109].indexOf(event.which) != -1) ? 1 : 0;
+  }
+
+  // update acc count
   if (acc == 1){accCount++;}
 }
 
@@ -152,7 +173,7 @@ function keyReleaseListener(event){
   if (keyListener == 2){
     keyListener = 0;
     clearTimeout(stimTimeout);
-    taskObject.itiScreen();
+    transitionFunc();
     return;
   }
 
@@ -162,34 +183,38 @@ function keyReleaseListener(event){
     return;
   }
 
+  // returning to task after holding down key too long or getting a screen size warning
+  if (keyListener == 4) {
+    keyListener = 0;
+    countDown(3);
+  }
 
-  // if (keyListener == 4 || keyListener == 6 || keyListener == 10) {
-  //   keyListener = 0;
-  //   countDown(3);
-  // }
-
-
-  // if (keyListener == 7) {
-  //   clearInterval(sectionTimer);
-  //
-  //   // 7: block feedback - press button to start next block
-  //   sectionEnd = new Date().getTime() - runStart;
-  //   logSectionData();
-  //   keyListener = 0;
-  //
-  //   // increment block information before beginning next block
-  //   block++; blockIndexer++;
-  //   blockType = blockOrder[blockIndexer];
-  //   blockTrialCount = 0;
-  //   countDown(3);
-  // }
-
-  if (keyListener == 8) { // press button to start task
+  // after practice task feedback
+  if (keyListener == 5) {
+    keyListener = 0;
     sectionEnd = new Date().getTime() - runStart;
     logSectionData();
+    navigateInstructionPath(repeatNecessary);
+  }
 
-    // reset keyListener and start task
+  // block break
+  if (keyListener == 7) {
+    clearInterval(sectionTimer);
+    sectionEnd = new Date().getTime() - runStart;
+    logSectionData();
     keyListener = 0;
+
+    // increment block information before beginning next block
+    block++;
+    blockType = blockOrder[block - 1];
+    blockTrialCount = 1;
+    countDown(3);
+  }
+
+  if (keyListener == 8) { // press button to start task
+    keyListener = 0;
+    sectionEnd = new Date().getTime() - runStart;
+    logSectionData();
     experimentFlow();
     return
   }

@@ -8,11 +8,13 @@ function stimScreen(){
   stimOnset = new Date().getTime() - runStart;
   prepareCanvas("45px Arial", "black", true)
 
+  // prepare for response
+  keyListener = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN;
+
   // draw stimuli for this trial
   stimFunc()
 
-  // prepare for response and proceed to iti after delay
-  keyListener = 1; acc = NaN, respTime = NaN, partResp = NaN, respOnset = NaN;
+  //proceed to iti after delay
   stimTimeout = setTimeout(itiScreen, stimInterval);
 }
 
@@ -24,7 +26,11 @@ function itiScreen(){
   }
 
   // log data
-  logAdditionalSingletonTask();
+  if (sectionType == "practiceTask") {
+    logPracticeTask();
+  } else {
+    logAdditionalSingletonTask();
+  }
 
   // display feedback
   prepareCanvas("60px Arial", "black", true);
@@ -32,7 +38,38 @@ function itiScreen(){
 
   // trial finished. iterate and proceed to next
   trialCount++; blockTrialCount++;
-  setTimeout(taskFunc, itiInterval(1200, 1400, 50));
+  setTimeout(taskFunc, itiInterval(itiMin, itiMax, itiStep));
+}
+
+function practiceTrialFunc(){
+  // (re)set sectionType (might have been changed to block break)
+  sectionType = "practiceTask";
+
+  // if task is over, proceed back to next instruction
+  if (trialCount > nPracticeTrials) {
+    if (decimalToPercent(accCount / nPracticeTrials) >= practiceAccCutoff) {
+      navigateInstructionPath();
+    } else {
+      practiceAccuracyFeedback(decimalToPercent(accCount / nPracticeTrials));
+    }
+    return;
+  }
+
+  // person is still holding down key from previous trial, tell them to let go
+  if (keyListener == 3){
+    promptLetGo();
+    return;
+  }
+
+  // if they minimized the screen, tell them its too small.
+  if (!screenSizeIsOk()){
+    promptScreenSize();
+    return;
+  }
+
+  // none of the above happened, proceed to trial
+  breakOn = false;
+  fixationScreen();
 }
 
 function drawShape(shape, coords){
@@ -74,7 +111,7 @@ function drawCircle(x, y, radius){
 function defaultStyle(){
   prepareCanvas("45px Arial", "black", false)
   ctx.strokeStyle = 'black'
-  ctx.lineWidth = 1
+  ctx.lineWidth = 2
 }
 
 function drawLine(x, y, radius, line_proportion, line_direction){
@@ -142,7 +179,7 @@ function countDown(seconds){
 
 function bigBlockScreen(){
   // block break with countdown so they don't pause too long
-  let minutesBreak = 2;
+  let minutesBreak = 3;
   sectionType = "blockBreak";
   sectionStart = new Date().getTime() - runStart;
   keyListener = 0;
@@ -194,31 +231,15 @@ function practiceAccuracyFeedback(accuracy){
   sectionType = "pracFeedback";
 
   // prepare canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "black";
-  ctx.font = "25px Arial";
-  // keyListener = 11; CHANGE ME
+  prepareCanvas("30px Arial", "black", true)
+  keyListener = 5;
+  repeatNecessary = true;
 
-  // display feedback
-  if (accuracy < practiceAccCutoff) { //if accuracy is too low
-    repeatNecessary = true;
-
-    // display feedback text
-    ctx.fillText("You got " + accuracy + "% correct in this practice block.",canvas.width/2,canvas.height/2 - 50);
-    ctx.fillText("Remember, you need to get >" + practiceAccCutoff + "%.",canvas.width/2,canvas.height/2);
-    ctx.fillText("Press any button to go back ",canvas.width/2,canvas.height/2 + 80);
-    ctx.fillText("to the instructions and try again.",canvas.width/2,canvas.height/2 + 110);
-
-  } else { //otherwise proceed to next section
-
-    // display feedback text
-    ctx.fillText("You got " + accuracy + "% correct in this practice block.",canvas.width/2,canvas.height/2 - 50);
-    ctx.fillText("Press any button to go on to the next section.",canvas.width/2,canvas.height/2 + 100);
-
-    // prep key press/instruction logic
-    repeatNecessary = false;
-
-  }
+  // display feedback text
+  ctx.fillText("You got " + accuracy + "% correct in this practice block.",canvas.width/2,canvas.height/2 - 50);
+  ctx.fillText("Remember, you need to get >" + practiceAccCutoff + "%.",canvas.width/2,canvas.height/2);
+  ctx.fillText("Press any button to go back ",canvas.width/2,canvas.height/2 + 80);
+  ctx.fillText("to the instructions and try again.",canvas.width/2,canvas.height/2 + 110);
 }
 
 function getAccuracy(accValue){
@@ -235,6 +256,9 @@ function promptLetGo(){
   // show warning
   ctx.fillText("Please release key",canvas.width/2,canvas.height/2);
   ctx.fillText("immediately after responding.",canvas.width/2,canvas.height/2 + 30);
+
+  // key listener
+  keyListener = 4;
 }
 
 function screenSizeIsOk(){
@@ -261,9 +285,11 @@ function screenSizeIsOk(){
   return w >= minWidth && h >= midHeight;
 };
 
+let screenSizePromptCount = 0;
+let nScreenSizeWarnings = 2;
 function promptScreenSize(){
   // set key press experiment type
-  expType = 10;
+  keyListener = 4;
 
   // prepare canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -271,7 +297,7 @@ function promptScreenSize(){
   ctx.font = "25px Arial";
 
   // allows up to two warnings before terminating experiment
-  if (screenSizePromptCount < numScreenSizeWarnings) {
+  if (screenSizePromptCount < nScreenSizeWarnings) {
     screenSizePromptCount++;
 
     // display screen size prompt

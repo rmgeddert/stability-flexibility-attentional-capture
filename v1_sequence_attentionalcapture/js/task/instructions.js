@@ -3,17 +3,19 @@
 let instructions = {
   // contains the interator for each instruction block, default 1
   iterator: {
-    "prac1": 1, "prac2": 1, "main1": 1
+    "prac1-1": 1, "prac1-2": 1, "prac2": 1, "prac3": 1, "main1": 1
   },
   // contains the max value of each instruction iteration. iteration will STOP at max and display exit response
   max: {
-    "prac1": 2, "prac2": 2, "main1": 2
+    "prac1-1": 4, "prac1-2": 6, "prac2": 5, "prac2": 7, "prac3": 7, "main1": 6
   },
   // what does instruction section end with?
   // #nextSectionButton, #startExpButton, keyPressNextSection, keyPressStartTask
   exitResponse: {
-    "prac1": 'keyPressStartTask',
+    "prac1-1": '#nextSectionButton',
+    "prac1-2": 'keyPressStartTask',
     "prac2": 'keyPressStartTask',
+    "prac3": 'keyPressStartTask',
     "main1": 'keyPressStartTask'
   }
 }
@@ -32,10 +34,16 @@ function navigateInstructionPath(repeat = false){
     runInstructions();
   } else {
     switch (expStage){
-      case "prac1":
+      case "prac1-1":
+        expStage = "prac1-2";
+        break;
+      case "prac1-2":
         expStage = "prac2";
         break;
       case "prac2":
+        expStage = "prac3";
+        break;
+      case "prac3":
         expStage = "main1";
         break;
       case "main1":
@@ -78,27 +86,99 @@ function getInstructionText(slideNum, expStage){
     - $("<img src='../pics/finalpics/M33.jpg' class='insertedImage'>").insertAfter( "#instructions" + slideNum);
 */
   switch (expStage){
-    case "prac1":
+    case "prac1-1":
       switch (slideNum){
         case 1:
-          return "Welcome to the experiment!";
+          return "Welcome to the experiment, thank you for your participation!";
         case 2:
-          return "Press any button to start the task.";
+          return "In this experiment, you will perform a task where you must find the unique shape among a grid of shapes, and then indicate the direction of a line within that shape. You will begin with some practice tasks to familiarize you with the task. The experiment is expected to take approximately 25 to 30 minutes.";
+        case 3:
+          return "Please enlarge this window to its maximum size and sit a comfortable distance from your computer screen.";
+        case 4:
+          return "Please respond as quickly and as accurately as possible throughout the tasks.";
       }
-    case "prac1":
+    case "prac1-2":
       switch (slideNum){
         case 1:
-          return "These are the instructions for the second practice task";
+          return "In this first practice task, you will indicate the direction of the tilt of the line within the shape.";
         case 2:
+          $( getImageText(instructionImages[2])).insertBefore( "#instructions" + slideNum);
+          return "Press the 'Z' key if the line is tilted to the left."
+        case 3:
+          $( getImageText(instructionImages[3])).insertBefore( "#instructions" + slideNum);
+          return "Press the 'M' key if the line is tilted to the right."
+        case 4:
+          return "You will need to get a least " + practiceAccCutoff + "% correct on this task in order to move onto the next section, otherwise you will need to repeat the practice.";
+        case 5:
+            $( getImageText(instructionImages[1])).insertAfter( "#instructions" + slideNum);
+            iterateAgain = true;
+            return "This block contains 8 trials. Please place your hands on the 'Z' and 'M' keys as shown.";
+        case 6:
+          changeTextFormat('#instructions' + slideNum,'font-weight','bold');
           return "Press any button to start the task.";
       }
-    case "main1":
+    case "prac2":
       switch (slideNum){
         case 1:
-          return "Great job! You are now ready to begin the main experiment.";
+          return "Great job! In the second practice task, you will see 6 shapes. 5 of the shapes will be same (e.g., all squares), while one of the shapes will be different (e.g., a hexagon).";
         case 2:
+          return "Use the 'Z' and 'M' keys to indicate the direction of the line in the shape that is different than the other shapes."
+        case 3:
+          $( getImageText(instructionImages[2])).insertBefore( "#instructions" + slideNum);
+          return "Press the 'Z' key if the line is tilted to the left."
+        case 4:
+          $( getImageText(instructionImages[3])).insertBefore( "#instructions" + slideNum);
+          return "Press the 'M' key if the line is tilted to the right."
+        case 5:
+          return "You will need to get a least " + practiceAccCutoff + "% correct on this task in order to move onto the next section, otherwise you will need to repeat the practice.";
+        case 6:
+          $( getImageText(instructionImages[1])).insertAfter( "#instructions" + slideNum);
+          iterateAgain = true;
+          return "This block contains 8 trials. Please place your hands on the 'Z' and 'M' keys as shown.";
+        case 7:
+          changeTextFormat('#instructions' + slideNum,'font-weight','bold');
           return "Press any button to start the task.";
       }
+    case "prac3":
+      switch (slideNum){
+        case 1:
+          return "Great job! In the final practice task, you will again see 6 shapes. Use the 'Z' and 'M' keys to indicate the direction of the line in the shape that is different than the other shapes.";
+        case 2:
+          return "Sometimes one of the other shapes (not the one you are responding to) will be highlighted in red. Your job is to ignore the highlighted shape as best as you can."
+        case 3:
+          $( getImageText(instructionImages[2])).insertBefore( "#instructions" + slideNum);
+          return "Remember, press the 'Z' key if the line is tilted to the left."
+        case 4:
+          $( getImageText(instructionImages[3])).insertBefore( "#instructions" + slideNum);
+          return "Press the 'M' key if the line is tilted to the right."
+        case 5:
+          return "You will need to get a least " + practiceAccCutoff + "% correct on this task in order to move onto the next section, otherwise you will need to repeat the practice.";
+        case 6:
+            $( getImageText(instructionImages[1])).insertAfter( "#instructions" + slideNum);
+            iterateAgain = true;
+            return "This block contains 16 trials. Please place your hands on the 'Z' and 'M' keys as shown.";
+        case 7:
+          changeTextFormat('#instructions' + slideNum,'font-weight','bold');
+          return "Press any button to start the task.";
+      }
+      case "main1":
+        switch (slideNum){
+            case 1:
+              return "Great job! You are now ready to begin the main experiment.";
+            case 2:
+              return "This experiment consists of 4 sections, with each section lasting about 4 to 5 minutes. You will get short breaks in between each section.";
+            case 3:
+              return "Remember to respond as quickly and as accuractely as possible on each trial.";
+            case 4:
+              return "Remember, use the 'Z' and 'M' keys to indicate the direction of the line in the shape that is different than the other shapes. Ignore the highlighted shape as best as you can.";
+            case 5:
+                $( getImageText(instructionImages[1])).insertAfter( "#instructions" + slideNum);
+                iterateAgain = true;
+                return "Please place your hands on the 'Z' and 'M' keys as shown before proceeding.";
+            case 6:
+              changeTextFormat('#instructions' + slideNum,'font-weight','bold');
+              return "Press any button to start the task.";
+          }
   }
 }
 
@@ -224,7 +304,7 @@ function exitResponse(){
   } else if (instructions["exitResponse"][expStage] == "#nextSectionButton") {
     $('#nextSectionButton').show();
   } else if (instructions["exitResponse"][expStage] == "keyPressStartTask"){
-    keyListener = 8;
+    setTimeout(function(){keyListener = 8}, 500);
   } //else if (instructions["exitResponse"][expStage] == "buttonPressNextSection"){
     //keyListener = 6;
   //}

@@ -2,6 +2,7 @@ function attentionalSingletonTask(){
 
   // set taskName for data logging
   taskName = "additionalSingletonTask";
+  blockType = blockOrder[block - 1];
 
   // prepare for task
   hideInstructions();
@@ -27,7 +28,7 @@ function attentionalSingletonTrial(){
     sectionType = "mainTask";
 
     // if task is over, proceed back to next instruction (or end of experiment)
-    if (trialCount >= nBlocks * trialsPerBlock) {
+    if (trialCount > nBlocks * trialsPerBlock) {
       navigateInstructionPath();
       return;
     }
@@ -59,8 +60,6 @@ function attentionalSingletonTrial(){
 function drawStimGrid(){
   let horz_offset = 180
   let vert_offset = 210
-  let circle_rad = 70
-  let line_proportion = 0.6
 
   let positions = {
     1: [canvas.width/2, canvas.height/2 - vert_offset, circle_rad],
@@ -71,8 +70,8 @@ function drawStimGrid(){
     6: [canvas.width/2, canvas.height/2 + vert_offset, circle_rad]
   }
 
-  let targetShape = targetShapeArr[trialCount - 1];
-  let nonTargetShape = shapeSwitcher[targetShape];
+  targetShape = targetShapeArr[trialCount - 1];
+  nonTargetShape = shapeSwitcher[targetShape];
 
   for (let [loc, coords] of Object.entries(positions)) {
 
@@ -91,7 +90,8 @@ function drawStimGrid(){
         ctx.lineWidth = 4
         drawShape(nonTargetShape, coords);
         defaultStyle();
-        drawLine(...coords, line_proportion, Math.random() > 0.5 ? "l" : "r")
+        distractorLineDirection = Math.random() > 0.5 ? "l" : "r";
+        drawLine(...coords, line_proportion, distractorLineDirection);
         continue;
       }
     }

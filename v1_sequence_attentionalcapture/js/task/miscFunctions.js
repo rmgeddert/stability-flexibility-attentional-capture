@@ -57,3 +57,7 @@ function equalCounts(arr){
   map = arr.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
   return [...map.values()][0] == [...map.values()][1];
 }
+
+function decimalToPercent(decimal){
+  return Math.round(decimal * 100 * 100) / 100;
+}

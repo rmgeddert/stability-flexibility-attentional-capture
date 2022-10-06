@@ -1,7 +1,7 @@
 function attentionalSingletonPracticeTask(){
   // set taskName for data logging
   taskName = "attentionalSingletonPracticeTask";
-  nPracticeTrials = 8;
+  nPracticeTrials = 16;
 
   // prepare for task
   hideInstructions();
@@ -10,41 +10,27 @@ function attentionalSingletonPracticeTask(){
   changeScreenBackgroundTo("lightgrey");
 
   // global variables for functions
-  taskFunc = attentionalSingletonPracticeTrial;
+  taskFunc = practiceTrialFunc;
   transitionFunc = itiScreen;
-  stimFunc = buildLineDirectionPracticeTaskArray();
+  stimFunc = drawStimGrid;
 
   //create task arrays
-  drawStimGrid();
+  buildAttentionalSingletonPracticeTaskArray();
 
   // start task after countdown (calls taskFunc)
   countDown(3);
 }
 
-function attentionalSingletonPracticeTrial(){
+function buildAttentionalSingletonPracticeTaskArray() {
+  // copies standard practice task creation
+  buildLineDirectionPracticeTaskArray();
 
-    // (re)set sectionType (might have been changed to block break)
-    sectionType = "practiceTask";
+  // except then modifies distraction array so there are distractors
+  // create sequence of switches and repeats (half of each)
+  let nDistractors = Math.floor(nPracticeTrials * 0.75); // mostly distractor
+  let nNoDistractors = nPracticeTrials - nDistractors;
+  distractionArr = shuffle(new Array(nDistractors).fill('d').concat(new Array(nNoDistractors).fill('n')));
 
-    // if task is over, proceed back to next instruction
-    if (trialCount >= nPracticeTrials) {
-      navigateInstructionPath();
-      return;
-    }
-
-    // person is still holding down key from previous trial, tell them to let go
-    if (keyListener == 3){
-      promptLetGo();
-      return;
-    }
-
-    // if they minimized the screen, tell them its too small.
-    if (!screenSizeIsOk()){
-      promptScreenSize();
-      return;
-    }
-
-    // none of the above happened, proceed to trial
-    breakOn = false;
-    fixationScreen();
+  // and figure out where each distractor will show up
+  distractorLocationArr = buildDistractorLocationArr(targetLocationArr);
 }
