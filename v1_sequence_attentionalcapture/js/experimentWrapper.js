@@ -1,7 +1,7 @@
 "use strict"
 
 // this is also the initial form, default 1
-let currentForm = 2;
+let currentForm = 1;
 
 $(document).ready(function(){
   // initially hide all DOM elements

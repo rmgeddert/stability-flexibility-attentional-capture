@@ -122,7 +122,7 @@ function getInstructionText(slideNum, expStage){
         case 1:
           return "Great job! In the second practice task, you will see 6 shapes. 5 of the shapes will be same (e.g., all squares), while one of the shapes will be different (e.g., a hexagon).";
         case 2:
-          return "Use the 'Z' and 'M' keys to indicate the direction of the line in the shape that is different than the other shapes."
+          return "Use the 'Z' and 'M' keys to indicate the direction of the line <b>in the shape that is different than the other shapes.</b>"
         case 3:
           $( getImageText(instructionImages[2])).insertBefore( "#instructions" + slideNum);
           return "Press the 'Z' key if the line is tilted to the left."
@@ -142,9 +142,9 @@ function getInstructionText(slideNum, expStage){
     case "prac3":
       switch (slideNum){
         case 1:
-          return "Great job! In the final practice task, you will again see 6 shapes. Use the 'Z' and 'M' keys to indicate the direction of the line in the shape that is different than the other shapes.";
+          return "Great job! In the final practice task, you will again see 6 shapes. Just as before, use the 'Z' and 'M' keys to indicate the direction of the line <b>in the shape that is different than the other shapes.</b>";
         case 2:
-          return "Sometimes one of the other shapes (not the one you are responding to) will be highlighted in red. Your job is to ignore the highlighted shape as best as you can."
+          return "This time, however, one of the other shapes (not the one you are responding to) will be highlighted in red. Do not respond to this highlighted shape. Just respond identically as the last practice, based on the shape that is different than the rest."
         case 3:
           $( getImageText(instructionImages[2])).insertBefore( "#instructions" + slideNum);
           return "Remember, press the 'Z' key if the line is tilted to the left."
@@ -208,7 +208,7 @@ function runInstructions(){
 
     // loop through instructions and show
     for (var i = 1; i <= instructions["max"][expStage]; i++) {
-      $('#instructions' + i).text( getInstructionText( i, expStage ));
+      $('#instructions' + i).html( getInstructionText( i, expStage ));
     }
 
     // reset iterateAgain in case looping turned it on by accident
@@ -282,7 +282,7 @@ function runInstructions(){
 
 function iterateInstruction(){
   let instrNum = instructions["iterator"][expStage];
-  $('#instructions' + instrNum).text( getInstructionText( instrNum, expStage));
+  $('#instructions' + instrNum).html( getInstructionText( instrNum, expStage));
 
   // iterate as appropriate or allow next phase
   if (instrNum < instructions["max"][expStage]){
