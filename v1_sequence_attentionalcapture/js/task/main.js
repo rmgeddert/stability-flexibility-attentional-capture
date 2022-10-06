@@ -2,10 +2,10 @@
 
 // QOL parameters
 let expStage = "prac1-1"; //first expStage, see instructions.js
-let speed = "fast"; //speed of experiment: fast or normal
+let speed = "normal"; //speed of experiment: fast or normal
 
 // ----- Global Variables  ----- //
-let stimInterval = (speed == "fast") ? 10 : 3000;
+let stimInterval = (speed == "fast") ? 10 : 2500;
 let fixInterval = (speed == "fast") ? 10 : 500;
 let itiMin = (speed == "fast") ? 10 : 1200;
 let itiMax = (speed == "fast") ? 10 : 1400;
