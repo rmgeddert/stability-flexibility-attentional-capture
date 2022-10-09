@@ -91,7 +91,7 @@ function getInstructionText(slideNum, expStage){
         case 1:
           return "Welcome to the experiment, thank you for your participation!";
         case 2:
-          return "In this experiment, you will perform a task where you must find the unique shape among a grid of shapes, and then indicate the direction of a line within that shape. You will begin with some practice tasks to familiarize you with the task. The experiment is expected to take approximately 25 to 30 minutes.";
+          return "In this experiment, you will perform a task where you must find the unique shape among a grid of shapes, and then indicate the direction of a line within that shape. You will begin with some practice tasks to familiarize you with the task. The experiment is expected to take approximately 30 to 40 minutes.";
         case 3:
           return "Please enlarge this window to its maximum size and sit a comfortable distance from your computer screen.";
         case 4:
@@ -166,7 +166,7 @@ function getInstructionText(slideNum, expStage){
             case 1:
               return "Great job! You are now ready to begin the main experiment.";
             case 2:
-              return "This experiment consists of 4 sections, with each section lasting about 4 to 5 minutes. You will get short breaks in between each section.";
+              return "This experiment consists of 4 sections, with each section lasting about 8 minutes. You will get short breaks in between each section.";
             case 3:
               return "Remember to respond as quickly and as accuractely as possible on each trial.";
             case 4:

@@ -34,7 +34,7 @@ function attentionalSingletonTrial(){
     }
 
     // if block break, go to block break
-    if (trialCount % trialsPerBlock == 0 && !breakOn && trialCount != 0) {
+    if ((trialCount - 1) % trialsPerBlock == 0 && !breakOn && (trialCount - 1) != 0) {
       breakOn = true;
       bigBlockScreen();
       return;
